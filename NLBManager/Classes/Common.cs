@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
-using System.Reflection;
-using System.Web;
 using Lurgle.Logging;
 // ReSharper disable InconsistentNaming
 
@@ -29,57 +27,6 @@ namespace NLBManager.Classes
         public const string LogStop = "{Service:l} v{Version:l} Stopped";
         public const string LogStopError = "{Service:l} v{Version:l} Stopped (Error: {Error})";
         private const string LogUnexpectedStatusCode = "Unexpected NLB status code: {StatusCode:l}";
-
-        static Common()
-        {
-            //Using GetEntryAssembly will fail under ASP.NET, so we fall back to using HttpContext and then GetExecutingAssembly
-            var isSuccess = true;
-            try
-            {
-                AppName = Assembly.GetEntryAssembly()?.GetName().Name;
-                AppVersion = Assembly.GetEntryAssembly()?.GetName().Version.ToString();
-            }
-            catch
-            {
-                isSuccess = false;
-            }
-
-            //This might be a web application
-            if (!isSuccess)
-                try
-                {
-                    var memberInfo = HttpContext.Current.ApplicationInstance.GetType().BaseType;
-                    if (memberInfo != null)
-                    {
-                        AppName = memberInfo.Assembly.GetName().Name;
-                        AppVersion = memberInfo.Assembly.GetName()
-                            .Version
-                            .ToString();
-                    }
-
-                    isSuccess = true;
-                }
-                catch
-                {
-                    isSuccess = false;
-                }
-
-            if (!isSuccess)
-                try
-                {
-                    AppName = Assembly.GetExecutingAssembly().GetName().Name;
-                    AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                }
-                catch
-                {
-                    //We surrender ...
-                    AppName = string.Empty;
-                    AppVersion = string.Empty;
-                }
-        }
-
-        public static string AppName { get; }
-        public static string AppVersion { get; }
 
         public static string GetClusterIp(string clusterName)
         {
@@ -194,11 +141,7 @@ namespace NLBManager.Classes
             try
             {
                 var serviceClass = new ManagementClass("Win32_Service");
-                foreach (var service in serviceClass.GetInstances().Cast<ManagementObject>().Where(mgmt =>
-                    ((string) mgmt["Name"]).Equals(serviceName, StringComparison.CurrentCultureIgnoreCase)))
-                    return service;
-
-                return null;
+                return serviceClass.GetInstances().Cast<ManagementObject>().FirstOrDefault(mgmt => ((string) mgmt["Name"]).Equals(serviceName, StringComparison.CurrentCultureIgnoreCase));
             }
             catch (Exception ex)
             {

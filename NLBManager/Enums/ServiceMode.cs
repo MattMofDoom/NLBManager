@@ -9,6 +9,6 @@
         /// <summary>
         /// NLB will always be started if the service is running, unless the node is suspended
         /// </summary>
-        SuspendMode,
+        SuspendMode
     }
 }

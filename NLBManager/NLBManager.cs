@@ -59,7 +59,7 @@ namespace NLBManager
                 _serviceTimer.Elapsed += ServiceTick;
                 _serviceTimer.Start();
 
-                Log.Information().Add(Common.LogStart, Common.AppName, Common.AppVersion);
+                Log.Information().Add(Common.LogStart, Logging.Config.AppName, Logging.Config.AppVersion);
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace NLBManager
             try
             {
                 _serviceTimer.Stop();
-                Log.Information().Add(Common.LogStop, Common.AppName, Common.AppVersion);
+                Log.Information().Add(Common.LogStop, Logging.Config.AppName, Logging.Config.AppVersion);
                 Logging.Close();
             }
             catch (Exception ex)
@@ -96,28 +96,39 @@ namespace NLBManager
                     switch (serviceStarted)
                     {
                         case true:
-                            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                             switch (nlbStatus)
                             {
                                 case NlbStatus.Stopped:
                                     Log.Information().Add(Common.LogServiceState,
-                                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                                        Config.ServiceName, serviceStarted, nlbStatus, Common.NlbStart);
+                                        Config.ServiceName, true, nlbStatus, Common.NlbStart);
                                     Common.StartNlb(nlb);
+                                    break;
+                                case NlbStatus.Converging:
+                                case NlbStatus.Converged:
+                                case NlbStatus.DefaultHost:
+                                case NlbStatus.Draining:
+                                case NlbStatus.Suspended:
+                                case NlbStatus.Unknown:
+                                default:
                                     break;
                             }
 
                             break;
                         case false:
-                            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                             switch (nlbStatus)
                             {
                                 case NlbStatus.Converged:
                                 case NlbStatus.DefaultHost:
                                     Log.Information().Add(Common.LogServiceState,
-                                        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                                        Config.ServiceName, serviceStarted, nlbStatus, Common.NlbStop);
+                                        Config.ServiceName, false, nlbStatus, Common.NlbStop);
                                     Common.StopNlb(nlb);
+                                    break;
+                                case NlbStatus.Stopped:
+                                case NlbStatus.Converging:
+                                case NlbStatus.Draining:
+                                case NlbStatus.Suspended:
+                                case NlbStatus.Unknown:
+                                default:
                                     break;
                             }
 
@@ -168,8 +179,7 @@ namespace NLBManager
                 Log.Exception(ex).Add(Common.LogError, ex.Message);
             }
 
-            // ReSharper disable once RedundantAssignment
-            currentState = Interlocked.CompareExchange(ref _serviceLockState, Available, Locked);
+            Interlocked.CompareExchange(ref _serviceLockState, Available, Locked);
         }
 
         /// <summary>
@@ -182,7 +192,7 @@ namespace NLBManager
             {
                 _serviceTimer.Stop();
                 Log.Error()
-                    .Add(Common.LogStopError, Common.AppName, Common.AppVersion, errorType);
+                    .Add(Common.LogStopError, Logging.Config.AppName, Logging.Config.AppVersion, errorType);
                 Logging.Close();
                 Environment.Exit((int) errorType);
             }

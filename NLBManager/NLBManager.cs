@@ -4,6 +4,7 @@ using System.Threading;
 using Lurgle.Logging;
 using NLBManager.Classes;
 using Timer = System.Timers.Timer;
+
 // ReSharper disable InconsistentNaming
 
 namespace NLBManager
@@ -91,7 +92,8 @@ namespace NLBManager
                 var nlb = Common.GetClusterNode(clusterIp);
                 if (nlb != null)
                 {
-                    if (serviceStarted.Equals(_lastServiceState) && !overrideServiceState && !Config.ServiceMode.Equals(ServiceMode.SuspendMode)) return;
+                    if (serviceStarted.Equals(_lastServiceState) && !overrideServiceState &&
+                        !Config.ServiceMode.Equals(ServiceMode.SuspendMode)) return;
                     var nlbStatus = Common.GetNlbStatus(nlb);
                     switch (serviceStarted)
                     {

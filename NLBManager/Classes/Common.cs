@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using Lurgle.Logging;
+
 // ReSharper disable InconsistentNaming
 
 namespace NLBManager.Classes
@@ -121,7 +122,7 @@ namespace NLBManager.Classes
             {
                 var ipClass = new ManagementClass("Win32_NetworkAdapterConfiguration");
                 foreach (var ip in ipClass.GetInstances().Cast<ManagementObject>()
-                    .Where(mgmt => (bool) mgmt["IPEnabled"]))
+                             .Where(mgmt => (bool) mgmt["IPEnabled"]))
                 {
                     var ipAddresses = ((string[]) ip.GetPropertyValue("IPAddress")).ToList();
                     if (ipAddresses.ToList().Contains(clusterIp)) return ipAddresses;
@@ -141,7 +142,8 @@ namespace NLBManager.Classes
             try
             {
                 var serviceClass = new ManagementClass("Win32_Service");
-                return serviceClass.GetInstances().Cast<ManagementObject>().FirstOrDefault(mgmt => ((string) mgmt["Name"]).Equals(serviceName, StringComparison.CurrentCultureIgnoreCase));
+                return serviceClass.GetInstances().Cast<ManagementObject>().FirstOrDefault(mgmt =>
+                    ((string) mgmt["Name"]).Equals(serviceName, StringComparison.CurrentCultureIgnoreCase));
             }
             catch (Exception ex)
             {

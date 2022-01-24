@@ -1,6 +1,5 @@
 ﻿namespace NLBManager
 {
-
     // ReSharper disable UnusedMember.Global
 
     public enum NlbStatus
